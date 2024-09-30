@@ -12,8 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.signup = void 0;
+exports.deleteUser = exports.deleteRestaurant = exports.joinRestaurant = exports.login = exports.signup = void 0;
 const User_1 = __importDefault(require("../model/User"));
+const Restaurant_1 = __importDefault(require("../model/Restaurant"));
 const express_validator_1 = require("express-validator");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -30,7 +31,12 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(400).json({ message: "ユーザーは既に存在します" });
     }
     const hashedPassword = yield bcrypt_1.default.hash(password, 12);
-    const newUser = new User_1.default({ name, email, password: hashedPassword, role });
+    const newUser = new User_1.default({
+        name,
+        email,
+        password: hashedPassword,
+        role,
+    });
     try {
         const user = yield newUser.save();
         res.status(201).json({ message: "ユーザーが登録でいました。", user });
@@ -63,7 +69,12 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
         res.status(200).json({
             token,
-            user: { id: user._id, name: user.name, role: user.role },
+            user: {
+                id: user._id,
+                name: user.name,
+                role: user.role,
+                restaurantId: user.restaurantId,
+            },
         });
     }
     catch (error) {
@@ -72,3 +83,72 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
+const joinRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const { userId, joiningKey } = req.body;
+    try {
+        const restaurant = yield Restaurant_1.default.findOne({ joiningKey });
+        if (!restaurant) {
+            res.status(400).json({ message: "レストランが見つかりません" });
+            return;
+        }
+        const user = yield User_1.default.findById(userId);
+        if (!user) {
+            res.status(400).json({ message: "ユーザーが見つかりません" });
+            return;
+        }
+        if (!((_a = user.restaurantId) === null || _a === void 0 ? void 0 : _a.includes(restaurant._id))) {
+            (_b = user.restaurantId) === null || _b === void 0 ? void 0 : _b.push(restaurant._id);
+        }
+        yield user.save();
+        res.status(200).json({ message: "レストランに参加しました", user });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "joinRestaurant api エラーです" });
+    }
+});
+exports.joinRestaurant = joinRestaurant;
+const deleteRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { userId, restaurantId } = req.body;
+        const user = yield User_1.default.findById(userId);
+        if (!user) {
+            res.status(404).json({ message: "ユーザーが見つかりません" });
+            return;
+        }
+        user.restaurantId = (_a = user.restaurantId) === null || _a === void 0 ? void 0 : _a.filter((id) => id.toString() !== restaurantId);
+        yield user.save();
+        res.status(200).json({ message: "レストランを削除しました", restaurantId });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "deleteRestaurant api エラーです" });
+    }
+});
+exports.deleteRestaurant = deleteRestaurant;
+const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    try {
+        const { password } = req.body;
+        const user = yield User_1.default.findById(userId);
+        if (!user) {
+            res.status(400).json({ message: "ユーザーIDがありません" });
+            return;
+        }
+        const isMatch = yield bcrypt_1.default.compare(password, user.password);
+        if (!isMatch) {
+            res.status(400).json({ message: "パスワードが間違っています" });
+            return;
+        }
+        yield User_1.default.findByIdAndDelete(userId);
+        res.status(200).json({ message: "ユーザーが削除されました" });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "deleteUser api エラーです" });
+    }
+});
+exports.deleteUser = deleteUser;

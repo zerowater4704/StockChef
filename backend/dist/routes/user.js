@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const user_controllers_1 = require("../controllers/user-controllers");
+const authenticateToken_1 = require("../middlewares/authenticateToken/authenticateToken");
 const router = (0, express_1.Router)();
 router.post("/signup", [
     (0, express_validator_1.check)("email")
@@ -19,4 +20,6 @@ router.post("/login", [
         .withMessage("有効なメールアドレスを入力してください"),
     (0, express_validator_1.check)("password").notEmpty().withMessage("パスワードが間違っています。"),
 ], user_controllers_1.login);
+router.post("/joinRestaurant", [(0, express_validator_1.check)("joiningKey").notEmpty().withMessage("参加キーを入力してください")], authenticateToken_1.authenticateToken, user_controllers_1.joinRestaurant);
+router.delete("/deleteRestaurant", authenticateToken_1.authenticateToken, user_controllers_1.deleteRestaurant);
 exports.default = router;

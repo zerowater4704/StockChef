@@ -14,6 +14,13 @@ export const registerOwner = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    console.log("バリデーションエラー", errors.array());
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
   const { name, email, password, restaurantName, location } = req.body;
 
   try {
@@ -71,7 +78,7 @@ export const ownerLogin = async (
     const owner = await User.findOne({ email });
 
     if (!owner) {
-      res.status(400).json({ message: "オーナーが見つかりません" });
+      res.status(400).json({ message: "Emailが間違っています" });
       return;
     }
 
@@ -153,25 +160,8 @@ export const updateOwner = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const token = req.headers.authorization?.split(" ")[1];
-
-  if (!token) {
-    res.status(401).json({ message: "トークンがありません" });
-    return;
-  }
-
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as jwt.JwtPayload;
-    let ownerId;
-    if (decoded && decoded.id) {
-      ownerId = decoded.id;
-    } else {
-      res.status(401).json({ message: "無効なトークン" });
-      return;
-    }
+    const ownerId = req.user?.id;
 
     const owner = await User.findById(ownerId);
 

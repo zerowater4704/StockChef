@@ -22,6 +22,12 @@ function generateJoiningKey() {
     return Math.random().toString(36).slice(2, 8);
 }
 const registerOwner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const errors = (0, express_validator_1.validationResult)(req);
+    if (!errors.isEmpty()) {
+        console.log("バリデーションエラー", errors.array());
+        res.status(400).json({ errors: errors.array() });
+        return;
+    }
     const { name, email, password, restaurantName, location } = req.body;
     try {
         const hashedPassword = yield bcrypt_1.default.hash(password, 10);
@@ -67,7 +73,7 @@ const ownerLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const owner = yield User_1.default.findOne({ email });
         if (!owner) {
-            res.status(400).json({ message: "オーナーが見つかりません" });
+            res.status(400).json({ message: "Emailが間違っています" });
             return;
         }
         const isMatch = yield bcrypt_1.default.compare(password, owner.password);
@@ -131,21 +137,8 @@ const addNewRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.addNewRestaurant = addNewRestaurant;
 const updateOwner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
-    if (!token) {
-        res.status(401).json({ message: "トークンがありません" });
-        return;
-    }
     try {
-        const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
-        let ownerId;
-        if (decoded && decoded.id) {
-            ownerId = decoded.id;
-        }
-        else {
-            res.status(401).json({ message: "無効なトークン" });
-            return;
-        }
+        const ownerId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
         const owner = yield User_1.default.findById(ownerId);
         if (!owner) {
             res.status(404).json({ message: "オーナーが見つかりません" });
@@ -269,6 +262,12 @@ const deleteRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.deleteRestaurant = deleteRestaurant;
 const deleteOwner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
+    const errors = (0, express_validator_1.validationResult)(req);
+    if (!errors.isEmpty()) {
+        console.log("バリデーションエラー", errors.array());
+        res.status(400).json({ errors: errors.array() });
+        return;
+    }
     const ownerId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
     try {
         const { password } = req.body;

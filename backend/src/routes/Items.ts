@@ -6,6 +6,7 @@ import {
 import {
   addItemToCategory,
   deleteItem,
+  getItem,
   updateItem,
 } from "../controllers/Item-controllers";
 
@@ -17,6 +18,8 @@ router.post(
   authorizeAdminOrManger,
   addItemToCategory
 );
+
+router.get("/:id", authenticateToken, authorizeAdminOrManger, getItem);
 router.put("/:id", authenticateToken, authorizeAdminOrManger, updateItem);
 router.delete("/:id", authenticateToken, authorizeAdminOrManger, deleteItem);
 export default router;

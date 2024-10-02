@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteItem = exports.updateItem = exports.addItemToCategory = void 0;
+exports.deleteItem = exports.updateItem = exports.getItem = exports.addItemToCategory = void 0;
 const Item_1 = __importDefault(require("../model/Item"));
 const Categories_1 = __importDefault(require("../model/Categories"));
 const addItemToCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -42,6 +42,22 @@ const addItemToCategory = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.addItemToCategory = addItemToCategory;
+const getItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const itemId = req.params.id;
+        const item = yield Item_1.default.findById(itemId);
+        if (!item) {
+            res.status(404).json({ message: "アイテムが見つかりません" });
+            return;
+        }
+        res.status(200).json({ item });
+    }
+    catch (error) {
+        console.error("Error in getItem:", error);
+        res.status(500).json({ message: "getItem api errorです。", error });
+    }
+});
+exports.getItem = getItem;
 const updateItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const itemId = req.params.id;
     const { name, stock } = req.body;

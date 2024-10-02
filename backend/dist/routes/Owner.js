@@ -21,7 +21,7 @@ router.post("/login", [
     (0, express_validator_1.check)("email")
         .isEmail()
         .withMessage("有効なメールアドレスを入力してください"),
-    (0, express_validator_1.check)("password").notEmpty().withMessage("パスワードが間違っています。"),
+    (0, express_validator_1.check)("password").notEmpty().withMessage("パスワードが間違っています"),
 ], owner_controller_1.ownerLogin);
 router.get("/joiningKey", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getJoiningKey);
 router.post("/addNewRestaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.addNewRestaurant);
@@ -31,5 +31,10 @@ router.get("/employee", authenticateToken_1.authenticateToken, authenticateToken
 router.get("/restaurantById", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getRestaurantById);
 router.get("/restaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getRestaurant);
 router.delete("/deleteRestaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.deleteRestaurant);
-router.delete("/deleteOwner", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.deleteOwner);
+router.delete("/deleteOwner", [
+    (0, express_validator_1.check)("email")
+        .isEmail()
+        .withMessage("有効なメールアドレスを入力してください"),
+    (0, express_validator_1.check)("password").notEmpty().withMessage("パスワードが間違っています。"),
+], authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.deleteOwner);
 exports.default = router;

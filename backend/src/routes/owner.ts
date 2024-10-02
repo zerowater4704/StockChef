@@ -43,7 +43,7 @@ router.post(
     check("email")
       .isEmail()
       .withMessage("有効なメールアドレスを入力してください"),
-    check("password").notEmpty().withMessage("パスワードが間違っています。"),
+    check("password").notEmpty().withMessage("パスワードが間違っています"),
   ],
   ownerLogin
 );

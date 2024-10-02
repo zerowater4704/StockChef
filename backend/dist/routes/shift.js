@@ -2,6 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authenticateToken_1 = require("../middlewares/authenticateToken/authenticateToken");
+const shift_controllers_1 = require("../controllers/shift-controllers");
 const router = (0, express_1.Router)();
-router.post("/", authenticateToken_1.authenticateToken);
+router.post("/requestShift", authenticateToken_1.authenticateToken, shift_controllers_1.requestShift);
+router.get("/getShifts", authenticateToken_1.authenticateToken, shift_controllers_1.getShifts);
+router.put("/updateShift", authenticateToken_1.authenticateToken, shift_controllers_1.updateShift);
+router.delete("/deleteShift", authenticateToken_1.authenticateToken, shift_controllers_1.deleteShift);
+router.post("/confirmShift", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, shift_controllers_1.confirmShift);
 exports.default = router;

@@ -63,6 +63,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const isMatch = yield bcrypt_1.default.compare(password, user.password);
         if (!isMatch) {
             res.status(400).json({ message: "パスワードが間違っています" });
+            return;
         }
         const token = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
             expiresIn: "1h",
@@ -85,6 +86,12 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.login = login;
 const joinRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
+    const errors = (0, express_validator_1.validationResult)(req);
+    if (!errors.isEmpty()) {
+        console.log("バリデーションエラー", errors.array());
+        res.status(400).json({ errors: errors.array() });
+        return;
+    }
     const { userId, joiningKey } = req.body;
     try {
         const restaurant = yield Restaurant_1.default.findOne({ joiningKey });
@@ -130,6 +137,12 @@ const deleteRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.deleteRestaurant = deleteRestaurant;
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
+    const errors = (0, express_validator_1.validationResult)(req);
+    if (!errors.isEmpty()) {
+        console.log("バリデーションエラー", errors.array());
+        res.status(400).json({ errors: errors.array() });
+        return;
+    }
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
     try {
         const { password } = req.body;

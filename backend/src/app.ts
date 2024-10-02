@@ -5,6 +5,7 @@ import userRoutes from "./routes/user";
 import categoryRoutes from "./routes/categories";
 import itemRouter from "./routes/Items";
 import ownerRouter from "./routes/owner";
+import shiftRouter from "./routes/shift";
 
 const app = express();
 const PORT = 3000;
@@ -16,6 +17,7 @@ app.use("/api/owner", ownerRouter);
 app.use("/api/user", userRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/item", itemRouter);
+app.use("/api/shift", shiftRouter);
 
 app.listen(PORT, () => {
   console.log("サーバーが起動しました");

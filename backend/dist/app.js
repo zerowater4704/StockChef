@@ -10,6 +10,7 @@ const user_1 = __importDefault(require("./routes/user"));
 const categories_1 = __importDefault(require("./routes/categories"));
 const Items_1 = __importDefault(require("./routes/Items"));
 const owner_1 = __importDefault(require("./routes/owner"));
+const shift_1 = __importDefault(require("./routes/shift"));
 const app = (0, express_1.default)();
 const PORT = 3000;
 (0, db_1.default)();
@@ -19,6 +20,7 @@ app.use("/api/owner", owner_1.default);
 app.use("/api/user", user_1.default);
 app.use("/api/category", categories_1.default);
 app.use("/api/item", Items_1.default);
+app.use("/api/shift", shift_1.default);
 app.listen(PORT, () => {
     console.log("サーバーが起動しました");
 });

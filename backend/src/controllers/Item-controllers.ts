@@ -36,6 +36,23 @@ export const addItemToCategory = async (
   }
 };
 
+export const getItem = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const itemId = req.params.id;
+
+    const item = await Item.findById(itemId);
+    if (!item) {
+      res.status(404).json({ message: "アイテムが見つかりません" });
+      return;
+    }
+
+    res.status(200).json({ item });
+  } catch (error) {
+    console.error("Error in getItem:", error);
+    res.status(500).json({ message: "getItem api errorです。", error });
+  }
+};
+
 export const updateItem = async (
   req: Request,
   res: Response

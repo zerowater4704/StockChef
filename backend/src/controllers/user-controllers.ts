@@ -61,6 +61,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     if (!isMatch) {
       res.status(400).json({ message: "パスワードが間違っています" });
+      return;
     }
 
     const token = jwt.sign(
@@ -90,6 +91,14 @@ export const joinRestaurant = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    console.log("バリデーションエラー", errors.array());
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
+
   const { userId, joiningKey } = req.body;
 
   try {

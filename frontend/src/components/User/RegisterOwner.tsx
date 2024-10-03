@@ -3,10 +3,6 @@ import { registerOwner } from "../../services/ownerService";
 import RegisterOwnerPage from "../../pages/register/RegisterOwnerPage";
 import { useNavigate } from "react-router-dom";
 
-interface OwnerRegisterAuthenticated {
-  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
 interface RegisterOwnerProps {
   name: string;
   email: string;
@@ -15,9 +11,7 @@ interface RegisterOwnerProps {
   location: string;
 }
 
-const RegisterOwner: React.FC<OwnerRegisterAuthenticated> = ({
-  setIsAuthenticated,
-}) => {
+const RegisterOwner: React.FC = ({}) => {
   const [formData, setFormData] = useState<RegisterOwnerProps>({
     name: "",
     email: "",
@@ -45,23 +39,38 @@ const RegisterOwner: React.FC<OwnerRegisterAuthenticated> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerError(null);
+    try {
+      const response = await registerOwner(formData);
+      console.log("APIレスポンス:", response);
+      if (!response.type) {
+        navigate("/login-owner");
+      } else {
+        if (response.type === "validation") {
+          const newErrors = { ...errors };
+          console.log("バリデーションエラー:", response.type);
+          console.log("バリデーションエラー:", response.message);
+          response.message.forEach((message: string, index: number) => {
+            // メッセージの順番に応じて特定のフィールドに割り当てる
+            const fields = Object.keys(errors);
+            newErrors[fields[index]] = message;
+          });
 
-    const response = await registerOwner(formData);
-    setIsAuthenticated(true);
-    navigate("/login");
-    if (response.type === "validation") {
-      const newErrors = { ...errors };
-
-      response.message.forEach((message: string, index: string) => {
-        const field = response.validationErrors[index].param;
-        newErrors[field] = message;
-      });
-
-      setErrors(newErrors);
-    } else if (response.type === "custom") {
-      setServerError(response.message);
-    } else if (response.type === "server") {
-      setServerError(response.message);
+          setErrors(newErrors);
+          return;
+        } else if (response.type === "custom") {
+          setServerError(response.message);
+          return;
+        } else if (response.type === "server") {
+          setServerError(response.message);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("catch ブロックに入ったエラー:", error);
+      setServerError(
+        "サーバーに接続できませんでした。後ほど再試行してください。"
+      );
     }
   };
 

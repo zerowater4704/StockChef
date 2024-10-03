@@ -12,6 +12,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
   if (!errors.isEmpty()) {
     console.log("バリデーションエラー", errors.array());
     res.status(400).json({ errors: errors.array() });
+    return;
   }
 
   const { name, email, password, role } = req.body;
@@ -20,6 +21,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
   if (existingUser) {
     console.log("ユーザーは既に存在します", existingUser);
     res.status(400).json({ message: "ユーザーは既に存在します" });
+    return;
   }
 
   const hashedPassword = await bcrypt.hash(password, 12);

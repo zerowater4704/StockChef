@@ -23,12 +23,14 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!errors.isEmpty()) {
         console.log("バリデーションエラー", errors.array());
         res.status(400).json({ errors: errors.array() });
+        return;
     }
     const { name, email, password, role } = req.body;
     const existingUser = yield User_1.default.findOne({ email });
     if (existingUser) {
         console.log("ユーザーは既に存在します", existingUser);
         res.status(400).json({ message: "ユーザーは既に存在します" });
+        return;
     }
     const hashedPassword = yield bcrypt_1.default.hash(password, 12);
     const newUser = new User_1.default({

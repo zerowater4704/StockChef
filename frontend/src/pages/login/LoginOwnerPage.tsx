@@ -31,7 +31,6 @@ const LoginOwnerPage: React.FC<LoginOwnerProps> = ({
         name="password"
         value={password}
         onChange={(e) => handleChange("password", e.target.value)}
-        error=""
       />
       <button type="submit">ログイン</button>
       <Link to="/register">新規登録</Link>

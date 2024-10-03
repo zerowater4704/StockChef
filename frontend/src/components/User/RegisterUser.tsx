@@ -3,10 +3,6 @@ import { registerUser } from "../../services/userService";
 import RegisterUserPage from "../../pages/register/RegisterUserPage";
 import { useNavigate } from "react-router-dom";
 
-interface UserRegisterAuthenticated {
-  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
 interface RegisterUserProps {
   name: string;
   email: string;
@@ -14,9 +10,7 @@ interface RegisterUserProps {
   role: "employee";
 }
 
-const RegisterUser: React.FC<UserRegisterAuthenticated> = ({
-  setIsAuthenticated,
-}) => {
+const RegisterUser: React.FC = ({}) => {
   const [formData, setFormData] = useState<RegisterUserProps>({
     name: "",
     email: "",
@@ -43,24 +37,30 @@ const RegisterUser: React.FC<UserRegisterAuthenticated> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const response = await registerUser(formData);
-    setIsAuthenticated(true);
-    navigate("/login");
-
-    if (response.type === "validation") {
-      const newErrors = { ...errors };
-
-      response.message.forEach((message: string, index: string) => {
-        const field = response.validationErrors[index].param;
-        newErrors[field] = message;
-      });
-
-      setErrors(newErrors);
-    } else if (response.type === "custom") {
-      setServerError(response.message);
-    } else if (response.type === "server") {
-      setServerError(response.message);
+    setServerError(null);
+    try {
+      const response = await registerUser(formData);
+      console.log(response);
+      if (!response.type) {
+        navigate("/login-user");
+      } else {
+        if (response.type === "validation") {
+          const newErrors = { ...errors };
+          response.message.forEach((message: string, index: number) => {
+            newErrors[Object.keys(errors)[index]] = message;
+          });
+          setErrors(newErrors);
+          return;
+        } else if (response.type === "custom") {
+          setServerError(response.message);
+          return;
+        } else if (response.type === "server") {
+          setServerError(response.message);
+          return;
+        }
+      }
+    } catch (error) {
+      console.log("catch error");
     }
   };
 

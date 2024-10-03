@@ -28,7 +28,7 @@ router.post("/addNewRestaurant", authenticateToken_1.authenticateToken, authenti
 router.put("/updateOwner", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.updateOwner);
 router.put("/updateRestaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.updateRestaurant);
 router.get("/employee", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getEmployeesByRestaurant);
-router.get("/restaurantById", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getRestaurantById);
+router.get("/restaurant/:id", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getRestaurantById);
 router.get("/restaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getRestaurant);
 router.delete("/deleteRestaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.deleteRestaurant);
 router.delete("/deleteOwner", [

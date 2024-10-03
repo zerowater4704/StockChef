@@ -29,6 +29,12 @@ const registerOwner = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         return;
     }
     const { name, email, password, restaurantName, location } = req.body;
+    const existingUser = yield User_1.default.findOne({ email });
+    if (existingUser) {
+        console.log("ユーザーは既に存在します", existingUser);
+        res.status(400).json({ message: "ユーザーは既に存在します" });
+        return;
+    }
     try {
         const hashedPassword = yield bcrypt_1.default.hash(password, 10);
         const owner = new User_1.default({
@@ -215,12 +221,12 @@ const getEmployeesByRestaurant = (req, res) => __awaiter(void 0, void 0, void 0,
 exports.getEmployeesByRestaurant = getEmployeesByRestaurant;
 const getRestaurantById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { restaurantId } = req.body;
-        if (!restaurantId) {
-            res.status(400).json({ message: "レストランが見つかりません" });
+        const { id } = req.params;
+        const restaurant = yield Restaurant_1.default.findById(id);
+        if (!restaurant) {
+            res.status(404).json({ message: "レストランが見つかりません" });
             return;
         }
-        const restaurant = yield Restaurant_1.default.findById(restaurantId);
         res.status(200).json({ restaurant });
     }
     catch (error) {

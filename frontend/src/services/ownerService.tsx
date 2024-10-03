@@ -15,9 +15,7 @@ export const registerOwner = async (data: {
   } catch (error: any) {
     if (error.response && error.response.data && error.response.data.errors) {
       const validationErrors = error.response.data.errors;
-      const errorsMessages = validationErrors.map(
-        (err: { msg: string }) => err.msg
-      );
+      const errorsMessages = validationErrors.map((err: any) => err.msg);
       return { type: "validation", message: errorsMessages };
     }
 
@@ -32,7 +30,16 @@ export const registerOwner = async (data: {
 export const loginOwner = async (data: { email: string; password: string }) => {
   try {
     const response = await axios.post(`${API_URL}/login`, data);
-    localStorage.setItem("token", response.data.token);
+    const { token, owner } = response.data;
+    if (owner.restaurantId && owner.restaurantId.length > 0) {
+      localStorage.setItem("restaurantId", owner.restaurantId);
+    }
+
+    if (response.data.token) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", owner.role);
+      console.log(response.data);
+    }
     return response.data;
   } catch (error: any) {
     if (error.response && error.response.data && error.response.data.errors) {

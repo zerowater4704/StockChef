@@ -33,6 +33,7 @@ export const loginUser = async (data: { email: string; password: string }) => {
     const response = await axios.post(`${API_URL}/login`, data);
     if (response.data.token) {
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("role", response.data.user.role);
       console.log(response.data);
       return response.data;
     }

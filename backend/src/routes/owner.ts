@@ -83,7 +83,7 @@ router.get(
 );
 
 router.get(
-  "/restaurantById",
+  "/restaurant/:id",
   authenticateToken,
   authorizeAdminOrManger,
   getRestaurantById

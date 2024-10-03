@@ -23,6 +23,13 @@ export const registerOwner = async (
   }
   const { name, email, password, restaurantName, location } = req.body;
 
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    console.log("ユーザーは既に存在します", existingUser);
+    res.status(400).json({ message: "ユーザーは既に存在します" });
+    return;
+  }
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -257,14 +264,14 @@ export const getRestaurantById = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { restaurantId } = req.body;
+    const { id } = req.params;
 
-    if (!restaurantId) {
-      res.status(400).json({ message: "レストランが見つかりません" });
+    const restaurant = await Restaurant.findById(id);
+
+    if (!restaurant) {
+      res.status(404).json({ message: "レストランが見つかりません" });
       return;
     }
-
-    const restaurant = await Restaurant.findById(restaurantId);
 
     res.status(200).json({ restaurant });
   } catch (error) {

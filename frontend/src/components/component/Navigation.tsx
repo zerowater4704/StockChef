@@ -19,7 +19,6 @@ const Navigation: React.FC<NavigationProps> = ({
     localStorage.removeItem("role");
     setIsAuthenticated(false);
   };
-
   const renderNavLinks = () => {
     if (role === "admin" && isAuthenticated) {
       return (
@@ -28,8 +27,8 @@ const Navigation: React.FC<NavigationProps> = ({
             <li>{restaurantName ? `${restaurantName}` : "読み込み中..."}</li>
           </Link>
           <li>
-            <Link to="/ingredients" className="p-2 hover:text-black">
-              材料
+            <Link to="/add-category" className="p-2 hover:text-black">
+              カテゴリ一覧
             </Link>
           </li>
           <li>

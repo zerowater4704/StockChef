@@ -87,14 +87,15 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.login = login;
 const joinRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     const errors = (0, express_validator_1.validationResult)(req);
     if (!errors.isEmpty()) {
         console.log("バリデーションエラー", errors.array());
         res.status(400).json({ errors: errors.array() });
         return;
     }
-    const { userId, joiningKey } = req.body;
+    const { joiningKey } = req.body;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
     try {
         const restaurant = yield Restaurant_1.default.findOne({ joiningKey });
         if (!restaurant) {
@@ -102,12 +103,13 @@ const joinRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, function*
             return;
         }
         const user = yield User_1.default.findById(userId);
+        console.log(user);
         if (!user) {
             res.status(400).json({ message: "ユーザーが見つかりません" });
             return;
         }
-        if (!((_a = user.restaurantId) === null || _a === void 0 ? void 0 : _a.includes(restaurant._id))) {
-            (_b = user.restaurantId) === null || _b === void 0 ? void 0 : _b.push(restaurant._id);
+        if (!((_b = user.restaurantId) === null || _b === void 0 ? void 0 : _b.includes(restaurant._id))) {
+            (_c = user.restaurantId) === null || _c === void 0 ? void 0 : _c.push(restaurant._id);
         }
         yield user.save();
         res.status(200).json({ message: "レストランに参加しました", user });

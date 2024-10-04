@@ -60,7 +60,9 @@ const getItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getItem = getItem;
 const updateItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const itemId = req.params.id;
+    console.log("itemId: ", itemId);
     const { name, stock } = req.body;
+    console.log("req body: ", req.body);
     try {
         const item = yield Item_1.default.findById(itemId);
         if (!item) {

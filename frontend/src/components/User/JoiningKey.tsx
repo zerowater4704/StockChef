@@ -17,11 +17,11 @@ const JoiningKey: React.FC<JoiningKeyAuthenticated> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors([]);
+    setIsAuthenticated(true);
 
     try {
       const response = await joiningRestaurant(joinKey);
       if (!response.type) {
-        setIsAuthenticated(true);
         navigate("/");
       } else {
         if (response.type === "validation") {

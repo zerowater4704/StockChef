@@ -8,6 +8,7 @@ import LoginUser from "../../components/User/LoginUser";
 import JoiningKey from "../../components/User/JoiningKey";
 import AddNewRestaurantForm from "../restaurant/AddNewRestaurantForm";
 import AllRestaurant from "../restaurant/AllRestaurant";
+import CategoryList from "../category/CategoryList";
 
 interface AppRoutesProps {
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
@@ -49,6 +50,10 @@ const AppRoutes: React.FC<AppRoutesProps> = ({
             setRestaurantName={setRestaurantName}
           />
         }
+      />
+      <Route
+        path="add-category"
+        element={<CategoryList setIsAuthenticated={setIsAuthenticated} />}
       />
     </Routes>
   );

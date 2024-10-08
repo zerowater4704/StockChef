@@ -30,8 +30,15 @@ const shiftSchema = new mongoose_1.Schema({
         ref: "User",
         required: true,
     },
-    shiftDate: { type: String, required: true },
-    shiftTime: { type: String, required: true },
-    confirmedShift: { type: String, default: null },
+    year: { type: Number, required: true },
+    month: { type: Number, required: true },
+    shifts: [
+        {
+            date: { type: String, required: true },
+            startTime: { type: String, required: true },
+            finishTime: { type: String, required: true },
+            confirmed: { type: Boolean, default: false },
+        },
+    ],
 }, { timestamps: true });
 exports.default = mongoose_1.default.model("Shift", shiftSchema);

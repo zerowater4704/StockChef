@@ -1,116 +1,22 @@
 import { Request, Response } from "express";
-import shift from "../model/Shift";
+import Shift from "../model/Shift";
 
-export const requestShift = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const requestShifts = async (req: Request, res: Response) => {
   try {
-    const { userId, shiftDate, shiftTime } = req.body;
-    const existingShift = await shift.findOne({ userId, shiftDate });
+    const userId = req.user?.id;
+    const { year, month, shifts } = req.body;
 
-    if (existingShift && existingShift.confirmedShift) {
-      res.status(400).json({ error: "既に確定されたシフトがあります。" });
-      return;
-    }
-
+    const existingShift = await Shift.findOne({ userId, year, month });
     if (existingShift) {
-      res.status(400).json({ error: "既にシフト希望が出されています。" });
+      res.status(400).json({ message: "既にその月のリクエストがあります。" });
       return;
     }
 
-    const newShift = new shift({ userId, shiftDate, shiftTime });
+    const newShifts = new Shift({ userId, year, month, shifts });
+    await newShifts.save();
 
-    await newShift.save();
-
-    res
-      .status(200)
-      .json({ message: "シフトリクエストが送信されました", newShift });
+    res.status(200).json({ message: "シフト登録に成功しました。", newShifts });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "requestShift APIで失敗しました。" });
-  }
-};
-
-export const getShifts = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const shifts = await shift.find().populate("userId", "name");
-
-    res.status(200).json({ shifts });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "getShifts APIで失敗しました。" });
-  }
-};
-
-export const updateShift = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const userId = req.user.id;
-    const { shiftDate, shiftTime } = req.body;
-
-    const updateTime = await shift.findOneAndUpdate(
-      { userId, shiftDate },
-      { shiftTime },
-      { new: true }
-    );
-
-    if (!updateTime) {
-      res.status(404).json({ message: "シフトが見つかりません" });
-      return;
-    }
-
-    await updateTime.save();
-    res.status(200).json({ message: "シフトが更新されました", updateTime });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "updateShift APIで失敗しました。" });
-  }
-};
-
-export const deleteShift = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const userId = req.user.id;
-
-    if (!userId) {
-      res.status(400).json({ message: "ユーザーが見つかりません" });
-      return;
-    }
-
-    await shift.findByIdAndDelete(userId);
-
-    res.status(200).json({ message: "シフトが削除されました" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "deleteShift APIで失敗しました。" });
-  }
-};
-
-export const confirmShift = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { userId, shiftDate, confirmedShift } = req.body;
-
-    const shiftConfirm = await shift.findOne({ userId, shiftDate });
-
-    if (!shiftConfirm) {
-      res.status(400).json({ message: "シフトが見つかりません" });
-      return;
-    }
-
-    shiftConfirm.confirmedShift = confirmedShift;
-    await shiftConfirm.save();
-
-    res.status(200).json({ message: "シフトが確定されました", shiftConfirm });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "confirmShift APIで失敗しました。" });
+    res.status(500).json({ message: "requestShifts APIのエラーです", error });
   }
 };

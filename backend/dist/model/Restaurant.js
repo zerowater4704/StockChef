@@ -32,6 +32,5 @@ const restaurantSchema = new mongoose_1.Schema({
         ref: "User",
         required: true,
     },
-    joiningKey: { type: String, required: true },
 }, { timestamps: true });
 exports.default = mongoose_1.default.model("Restaurant", restaurantSchema);

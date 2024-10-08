@@ -1,10 +1,8 @@
 import { Router } from "express";
 import {
-  addNewRestaurant,
   deleteOwner,
   deleteRestaurant,
   getEmployeesByRestaurant,
-  getJoiningKey,
   getRestaurant,
   getRestaurantById,
   ownerLogin,
@@ -48,19 +46,12 @@ router.post(
   ownerLogin
 );
 
-router.get(
-  "/joiningKey",
-  authenticateToken,
-  authorizeAdminOrManger,
-  getJoiningKey
-);
-
-router.post(
-  "/addNewRestaurant",
-  authenticateToken,
-  authorizeAdminOrManger,
-  addNewRestaurant
-);
+// router.get(
+//   "/joiningKey",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   getJoiningKey
+// );
 
 router.put(
   "/updateOwner",

@@ -103,7 +103,6 @@ const joinRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, function*
             return;
         }
         const user = yield User_1.default.findById(userId);
-        console.log(user);
         if (!user) {
             res.status(400).json({ message: "ユーザーが見つかりません" });
             return;

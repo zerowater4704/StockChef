@@ -23,8 +23,12 @@ router.post("/login", [
         .withMessage("有効なメールアドレスを入力してください"),
     (0, express_validator_1.check)("password").notEmpty().withMessage("パスワードが間違っています"),
 ], owner_controller_1.ownerLogin);
-router.get("/joiningKey", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getJoiningKey);
-router.post("/addNewRestaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.addNewRestaurant);
+// router.get(
+//   "/joiningKey",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   getJoiningKey
+// );
 router.put("/updateOwner", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.updateOwner);
 router.put("/updateRestaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.updateRestaurant);
 router.get("/employee", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getEmployeesByRestaurant);

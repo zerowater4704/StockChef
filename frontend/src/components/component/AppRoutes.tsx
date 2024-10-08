@@ -9,6 +9,7 @@ import JoiningKey from "../../components/User/JoiningKey";
 import AddNewRestaurantForm from "../restaurant/AddNewRestaurantForm";
 import AllRestaurant from "../restaurant/AllRestaurant";
 import CategoryList from "../category/CategoryList";
+import SubmitShift from "../shift/SubmitShift";
 
 interface AppRoutesProps {
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
@@ -55,6 +56,7 @@ const AppRoutes: React.FC<AppRoutesProps> = ({
         path="add-category"
         element={<CategoryList setIsAuthenticated={setIsAuthenticated} />}
       />
+      <Route path="/submit-shift" element={<SubmitShift />} />
     </Routes>
   );
 };

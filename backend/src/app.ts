@@ -6,6 +6,7 @@ import categoryRoutes from "./routes/categories";
 import itemRouter from "./routes/Items";
 import ownerRouter from "./routes/owner";
 import shiftRouter from "./routes/shift";
+import restaurantRouter from "./routes/restaurant";
 
 const app = express();
 const PORT = 3000;
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/owner", ownerRouter);
 app.use("/api/user", userRoutes);
+app.use("/api/restaurant", restaurantRouter);
 app.use("/api/category", categoryRoutes);
 app.use("/api/item", itemRouter);
 app.use("/api/shift", shiftRouter);

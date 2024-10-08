@@ -108,60 +108,60 @@ export const ownerLogin = async (
   }
 };
 
-export const getJoiningKey = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const ownerId = req.user?.id;
+// export const getJoiningKey = async (
+//   req: Request,
+//   res: Response
+// ): Promise<void> => {
+//   const ownerId = req.user?.id;
 
-  try {
-    const restaurant = await Restaurant.findOne({ adminId: ownerId });
+//   try {
+//     const restaurant = await Restaurant.findOne({ adminId: ownerId });
 
-    if (!restaurant) {
-      res.status(404).json({ message: "レストランが見つかりません" });
-      return;
-    }
+//     if (!restaurant) {
+//       res.status(404).json({ message: "レストランが見つかりません" });
+//       return;
+//     }
 
-    res.status(200).json({ joiningKey: restaurant.joiningKey });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "getJoiningKey APIで失敗しました。" });
-  }
-};
+//     res.status(200).json({ joiningKey: restaurant.joiningKey });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "getJoiningKey APIで失敗しました。" });
+//   }
+// };
 
-export const addNewRestaurant = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const ownerId = req.user?.id;
+// export const addNewRestaurant = async (
+//   req: Request,
+//   res: Response
+// ): Promise<void> => {
+//   try {
+//     const ownerId = req.user?.id;
 
-    const { name, location } = req.body;
-    const restaurant = new Restaurant({
-      name,
-      location,
-      adminId: ownerId,
-      joiningKey: generateJoiningKey(),
-    });
+//     const { name, location } = req.body;
+//     const restaurant = new Restaurant({
+//       name,
+//       location,
+//       adminId: ownerId,
+//       joiningKey: generateJoiningKey(),
+//     });
 
-    await restaurant.save();
+//     await restaurant.save();
 
-    const owner = await User.findById(ownerId);
+//     const owner = await User.findById(ownerId);
 
-    if (!owner?.restaurantId) {
-      res.status(404).json({ message: "オーナーが見つかりません" });
-      return;
-    }
+//     if (!owner?.restaurantId) {
+//       res.status(404).json({ message: "オーナーが見つかりません" });
+//       return;
+//     }
 
-    owner.restaurantId.push(restaurant._id as mongoose.Schema.Types.ObjectId);
-    res
-      .status(201)
-      .json({ message: "新しいレストランが登録されました", owner, restaurant });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "addNewRestaurant APIで失敗しました。" });
-  }
-};
+//     owner.restaurantId.push(restaurant._id as mongoose.Schema.Types.ObjectId);
+//     res
+//       .status(201)
+//       .json({ message: "新しいレストランが登録されました", owner, restaurant });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "addNewRestaurant APIで失敗しました。" });
+//   }
+// };
 
 export const updateOwner = async (
   req: Request,

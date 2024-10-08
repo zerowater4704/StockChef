@@ -4,7 +4,6 @@ interface IRestaurant extends Document {
   name: string;
   location: string;
   adminId: mongoose.Schema.Types.ObjectId;
-  joiningKey: string;
 }
 
 const restaurantSchema: Schema = new Schema(
@@ -16,7 +15,6 @@ const restaurantSchema: Schema = new Schema(
       ref: "User",
       required: true,
     },
-    joiningKey: { type: String, required: true },
   },
   { timestamps: true }
 );

@@ -113,7 +113,6 @@ export const joinRestaurant = async (
     }
 
     const user = await User.findById(userId);
-    console.log(user);
     if (!user) {
       res.status(400).json({ message: "ユーザーが見つかりません" });
       return;

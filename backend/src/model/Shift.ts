@@ -2,9 +2,14 @@ import mongoose, { Schema, Document } from "mongoose";
 
 interface IShift extends Document {
   userId: mongoose.Schema.Types.ObjectId;
-  shiftDate: string;
-  shiftTime: string;
-  confirmedShift: String;
+  year: number;
+  month: number;
+  shifts: {
+    data: string;
+    startTime: string;
+    finishTime: string;
+    confirmed: string;
+  }[];
 }
 
 const shiftSchema: Schema = new Schema(
@@ -14,9 +19,16 @@ const shiftSchema: Schema = new Schema(
       ref: "User",
       required: true,
     },
-    shiftDate: { type: String, required: true },
-    shiftTime: { type: String, required: true },
-    confirmedShift: { type: String, default: null },
+    year: { type: Number, required: true },
+    month: { type: Number, required: true },
+    shifts: [
+      {
+        date: { type: String, required: true },
+        startTime: { type: String, required: true },
+        finishTime: { type: String, required: true },
+        confirmed: { type: Boolean, default: false },
+      },
+    ],
   },
   { timestamps: true }
 );

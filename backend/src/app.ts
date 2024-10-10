@@ -5,7 +5,8 @@ import userRoutes from "./routes/user";
 import categoryRoutes from "./routes/categories";
 import itemRouter from "./routes/Items";
 import ownerRouter from "./routes/owner";
-import shiftRouter from "./routes/shift";
+import userShiftRouter from "./routes/user-shift";
+import ownerShiftRouter from "./routes/owner-shift";
 import restaurantRouter from "./routes/restaurant";
 
 const app = express();
@@ -19,7 +20,8 @@ app.use("/api/user", userRoutes);
 app.use("/api/restaurant", restaurantRouter);
 app.use("/api/category", categoryRoutes);
 app.use("/api/item", itemRouter);
-app.use("/api/shift", shiftRouter);
+app.use("/api/user/shift", userShiftRouter);
+app.use("/api/owner/shift", ownerShiftRouter);
 
 app.listen(PORT, () => {
   console.log("サーバーが起動しました");

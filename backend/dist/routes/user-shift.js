@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const authenticateToken_1 = require("../middlewares/authenticateToken/authenticateToken");
+const user_shift_controllers_1 = require("../controllers/user-shift-controllers");
+const router = (0, express_1.Router)();
+router.post("/requestShifts", authenticateToken_1.authenticateToken, user_shift_controllers_1.requestShifts);
+router.get("/pending", authenticateToken_1.authenticateToken, user_shift_controllers_1.getPendingShifts);
+router.get("/confirmed", authenticateToken_1.authenticateToken, user_shift_controllers_1.getConfirmedShifts);
+router.put("/updateShift", authenticateToken_1.authenticateToken, user_shift_controllers_1.updateShift);
+router.delete("/deleteShift", authenticateToken_1.authenticateToken, user_shift_controllers_1.deleteShift);
+exports.default = router;

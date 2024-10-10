@@ -5,10 +5,10 @@ interface IShift extends Document {
   year: number;
   month: number;
   shifts: {
-    data: string;
+    date: string;
     startTime: string;
     finishTime: string;
-    confirmed: string;
+    confirmed: boolean;
   }[];
 }
 

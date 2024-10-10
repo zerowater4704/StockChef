@@ -129,9 +129,11 @@ export const joinRestaurant = async (
     await user.save();
 
     res.status(200).json({ message: "レストランに参加しました", user });
+    return;
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "joinRestaurant api エラーです" });
+    return;
   }
 };
 

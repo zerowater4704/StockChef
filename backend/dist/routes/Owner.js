@@ -23,22 +23,47 @@ router.post("/login", [
         .withMessage("有効なメールアドレスを入力してください"),
     (0, express_validator_1.check)("password").notEmpty().withMessage("パスワードが間違っています"),
 ], owner_controller_1.ownerLogin);
-// router.get(
-//   "/joiningKey",
-//   authenticateToken,
-//   authorizeAdminOrManger,
-//   getJoiningKey
-// );
 router.put("/updateOwner", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.updateOwner);
-router.put("/updateRestaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.updateRestaurant);
-router.get("/employee", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getEmployeesByRestaurant);
-router.get("/restaurant/:id", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getRestaurantById);
-router.get("/restaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.getRestaurant);
-router.delete("/deleteRestaurant", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.deleteRestaurant);
 router.delete("/deleteOwner", [
     (0, express_validator_1.check)("email")
         .isEmail()
         .withMessage("有効なメールアドレスを入力してください"),
     (0, express_validator_1.check)("password").notEmpty().withMessage("パスワードが間違っています。"),
 ], authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.deleteOwner);
+// router.get(
+//   "/joiningKey",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   getJoiningKey
+// );
+// router.put(
+//   "/updateRestaurant",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   updateRestaurant
+// );
+// router.get(
+//   "/employee",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   getEmployeesByRestaurant
+// );
+// router.get(
+//   "/restaurant/:id",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   getRestaurantById
+// );
+// router.get(
+//   "/restaurant",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   getRestaurant
+// );
+// router.delete(
+//   "/deleteRestaurant",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   deleteRestaurant
+// );
 exports.default = router;

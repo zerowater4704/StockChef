@@ -8,4 +8,5 @@ router.get("/pendingShift", authenticateToken_1.authenticateToken, authenticateT
 router.post("/confirmShift", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_shift_controllers_1.confirmShiftsByRestaurant);
 router.put("/updateShift", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_shift_controllers_1.updatePendingShift);
 router.get("/confirmedShift", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_shift_controllers_1.getAllConfirmedShift);
+router.delete("/deleteShift", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_shift_controllers_1.deleteShift);
 exports.default = router;

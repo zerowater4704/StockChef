@@ -62,6 +62,12 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(400).json({ message: "ユーザーが見つかりません" });
             return;
         }
+        if (user.role !== "employee" && user.role !== "manager") {
+            res.status(400).json({
+                message: "今のアカウントは従業員のアカウントではありません",
+            });
+            return;
+        }
         const isMatch = yield bcrypt_1.default.compare(password, user.password);
         if (!isMatch) {
             res.status(400).json({ message: "パスワードが間違っています" });

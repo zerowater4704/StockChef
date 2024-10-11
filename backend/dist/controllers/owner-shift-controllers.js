@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllConfirmedShift = exports.updatePendingShift = exports.confirmShiftsByRestaurant = exports.getAllPendingShift = void 0;
+exports.deleteShift = exports.getAllConfirmedShift = exports.updatePendingShift = exports.confirmShiftsByRestaurant = exports.getAllPendingShift = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const Shift_1 = __importDefault(require("../model/Shift"));
 // 従業員IDをレストランIDで取得するヘルパー関数
@@ -162,7 +162,7 @@ const updatePendingShift = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.updatePendingShift = updatePendingShift;
-// 確定してシフト取得
+// 確定したシフトの取得
 const getAllConfirmedShift = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -210,3 +210,51 @@ const getAllConfirmedShift = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getAllConfirmedShift = getAllConfirmedShift;
+// シフト削除
+const deleteShift = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        const { year, month, restaurantId, date } = req.body;
+        if (!restaurantId) {
+            res.status(400).json({ message: "レストランを見つかりません" });
+            return;
+        }
+        const user = yield User_1.default.findById(userId);
+        if (!user) {
+            res.status(404).json({ message: "ユーザーが見つかりません" });
+            return;
+        }
+        if (!user.restaurantId || !user.restaurantId.includes(restaurantId)) {
+            res.status(403).json({ message: "レストランのアクセス権がありません" });
+            return;
+        }
+        const employeeIds = yield getEmployeesIdsByRestaurant(restaurantId);
+        const shiftDoc = yield Shift_1.default.findOne({
+            userId: { $in: employeeIds },
+            year,
+            month,
+        });
+        if (!shiftDoc) {
+            res.status(404).json({ message: "シフトを見つかりません" });
+            return;
+        }
+        // 指定された日付のシフトを見つける
+        const shiftDelete = shiftDoc.shifts.find((shift) => shift.date === date);
+        if (!shiftDelete) {
+            res.status(400).json({ message: "指定した日のシフトを見つかりません" });
+            return;
+        }
+        if (shiftDelete.confirmed) {
+            res.status(400).json({ message: "確定されたシフトが削除できません" });
+        }
+        // 指定された日のシフトを配列から削除
+        shiftDoc.shifts = shiftDoc.shifts.filter((shift) => shift.date !== date);
+        yield shiftDoc.save();
+        res.status(200).json({ message: "シフトを削除しました" });
+    }
+    catch (error) {
+        res.status(500).json({ message: "deleteShift apiのエラーです", error });
+    }
+});
+exports.deleteShift = deleteShift;

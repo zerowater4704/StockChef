@@ -1,14 +1,9 @@
 import { Router } from "express";
 import {
   deleteOwner,
-  deleteRestaurant,
-  getEmployeesByRestaurant,
-  getRestaurant,
-  getRestaurantById,
   ownerLogin,
   registerOwner,
   updateOwner,
-  updateRestaurant,
 } from "../controllers/owner-controller";
 import { check } from "express-validator";
 import {
@@ -46,52 +41,11 @@ router.post(
   ownerLogin
 );
 
-// router.get(
-//   "/joiningKey",
-//   authenticateToken,
-//   authorizeAdminOrManger,
-//   getJoiningKey
-// );
-
 router.put(
   "/updateOwner",
   authenticateToken,
   authorizeAdminOrManger,
   updateOwner
-);
-router.put(
-  "/updateRestaurant",
-  authenticateToken,
-  authorizeAdminOrManger,
-  updateRestaurant
-);
-
-router.get(
-  "/employee",
-  authenticateToken,
-  authorizeAdminOrManger,
-  getEmployeesByRestaurant
-);
-
-router.get(
-  "/restaurant/:id",
-  authenticateToken,
-  authorizeAdminOrManger,
-  getRestaurantById
-);
-
-router.get(
-  "/restaurant",
-  authenticateToken,
-  authorizeAdminOrManger,
-  getRestaurant
-);
-
-router.delete(
-  "/deleteRestaurant",
-  authenticateToken,
-  authorizeAdminOrManger,
-  deleteRestaurant
 );
 
 router.delete(
@@ -106,4 +60,46 @@ router.delete(
   authorizeAdminOrManger,
   deleteOwner
 );
+// router.get(
+//   "/joiningKey",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   getJoiningKey
+// );
+
+// router.put(
+//   "/updateRestaurant",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   updateRestaurant
+// );
+
+// router.get(
+//   "/employee",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   getEmployeesByRestaurant
+// );
+
+// router.get(
+//   "/restaurant/:id",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   getRestaurantById
+// );
+
+// router.get(
+//   "/restaurant",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   getRestaurant
+// );
+
+// router.delete(
+//   "/deleteRestaurant",
+//   authenticateToken,
+//   authorizeAdminOrManger,
+//   deleteRestaurant
+// );
+
 export default router;

@@ -59,6 +59,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    if (user.role !== "employee" && user.role !== "manager") {
+      res.status(400).json({
+        message: "今のアカウントは従業員のアカウントではありません",
+      });
+      return;
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {

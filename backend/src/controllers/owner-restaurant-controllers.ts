@@ -146,7 +146,6 @@ export const getAllRestaurant = async (
     const ownerObjectId = new mongoose.Types.ObjectId(ownerId);
 
     const restaurants = await Restaurant.find({ adminId: ownerObjectId });
-
     res.status(200).json({ restaurants });
   } catch (error) {
     console.error(error);

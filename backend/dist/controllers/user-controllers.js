@@ -12,12 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.deleteRestaurant = exports.joinRestaurant = exports.login = exports.signup = void 0;
+exports.deleteUser = exports.deleteRestaurant = exports.refreshAccessToken = exports.userLogout = exports.login = exports.signup = void 0;
 const User_1 = __importDefault(require("../model/User"));
-const Restaurant_1 = __importDefault(require("../model/Restaurant"));
 const express_validator_1 = require("express-validator");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const redisClient_1 = __importDefault(require("../redis/redisClient"));
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, express_validator_1.validationResult)(req);
     if (!errors.isEmpty()) {
@@ -32,7 +32,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(400).json({ message: "ユーザーは既に存在します" });
         return;
     }
-    const hashedPassword = yield bcrypt_1.default.hash(password, 12);
+    const hashedPassword = yield bcrypt_1.default.hash(password, 10);
     const newUser = new User_1.default({
         name,
         email,
@@ -73,11 +73,16 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(400).json({ message: "パスワードが間違っています" });
             return;
         }
-        const token = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-            expiresIn: "1h",
+        const accessToken = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "10m" });
+        const refreshToken = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "1d" });
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            sameSite: "none",
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000,
         });
         res.status(200).json({
-            token,
+            accessToken,
             user: {
                 id: user._id,
                 name: user.name,
@@ -92,41 +97,33 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
-const joinRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
-    const errors = (0, express_validator_1.validationResult)(req);
-    if (!errors.isEmpty()) {
-        console.log("バリデーションエラー", errors.array());
-        res.status(400).json({ errors: errors.array() });
+const userLogout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    if (!token) {
+        res.status(400).json({ message: "トークンがありません" });
         return;
     }
-    const { joiningKey } = req.body;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
-    try {
-        const restaurant = yield Restaurant_1.default.findOne({ joiningKey });
-        if (!restaurant) {
-            res.status(400).json({ message: "レストランが見つかりません" });
-            return;
-        }
-        const user = yield User_1.default.findById(userId);
-        if (!user) {
-            res.status(400).json({ message: "ユーザーが見つかりません" });
-            return;
-        }
-        if (!((_b = user.restaurantId) === null || _b === void 0 ? void 0 : _b.includes(restaurant._id))) {
-            (_c = user.restaurantId) === null || _c === void 0 ? void 0 : _c.push(restaurant._id);
-        }
-        yield user.save();
-        res.status(200).json({ message: "レストランに参加しました", user });
-        return;
-    }
-    catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "joinRestaurant api エラーです" });
-        return;
-    }
+    yield redisClient_1.default.set(token, "blacklisted", { EX: 3600 });
+    res.status(200).json({ message: "ログアウトしました" });
 });
-exports.joinRestaurant = joinRestaurant;
+exports.userLogout = userLogout;
+const refreshAccessToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+        res.status(403).json({ message: "リフレッシュトークンがありません" });
+        return;
+    }
+    jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+        if (err)
+            return res
+                .status(403)
+                .json({ message: "リフレッシュトークンが無効です" });
+        const newAccessToken = jsonwebtoken_1.default.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "10m" });
+        res.status(200).json({ accessToken: newAccessToken });
+    });
+});
+exports.refreshAccessToken = refreshAccessToken;
 const deleteRestaurant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {

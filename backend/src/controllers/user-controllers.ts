@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
+import redisClient from "../redis/redisClient";
 
 export const signup = async (req: Request, res: Response): Promise<void> => {
   const errors = validationResult(req);
@@ -24,7 +24,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const hashedPassword = await bcrypt.hash(password, 12);
+  const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = new User({
     name,
     email,
@@ -73,16 +73,27 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET as string,
-      {
-        expiresIn: "1h",
-      }
+      { expiresIn: "10m" }
     );
 
+    const refreshToken = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      { expiresIn: "1d" }
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
     res.status(200).json({
-      token,
+      accessToken,
       user: {
         id: user._id,
         name: user.name,
@@ -96,52 +107,49 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const joinRestaurant = async (
+export const userLogout = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const errors = validationResult(req);
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
-  if (!errors.isEmpty()) {
-    console.log("バリデーションエラー", errors.array());
-    res.status(400).json({ errors: errors.array() });
+  if (!token) {
+    res.status(400).json({ message: "トークンがありません" });
     return;
   }
 
-  const { joiningKey } = req.body;
-  const userId = req.user?.id;
+  await redisClient.set(token, "blacklisted", { EX: 3600 });
 
-  try {
-    const restaurant = await Restaurant.findOne({ joiningKey });
+  res.status(200).json({ message: "ログアウトしました" });
+};
 
-    if (!restaurant) {
-      res.status(400).json({ message: "レストランが見つかりません" });
-      return;
-    }
+export const refreshAccessToken = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken;
 
-    const user = await User.findById(userId);
-    if (!user) {
-      res.status(400).json({ message: "ユーザーが見つかりません" });
-      return;
-    }
-
-    if (
-      !user.restaurantId?.includes(
-        restaurant._id as mongoose.Schema.Types.ObjectId
-      )
-    ) {
-      user.restaurantId?.push(restaurant._id as mongoose.Schema.Types.ObjectId);
-    }
-
-    await user.save();
-
-    res.status(200).json({ message: "レストランに参加しました", user });
-    return;
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "joinRestaurant api エラーです" });
+  if (!refreshToken) {
+    res.status(403).json({ message: "リフレッシュトークンがありません" });
     return;
   }
+
+  jwt.verify(
+    refreshToken,
+    process.env.REFRESH_TOKEN_SECRET as string,
+    (err: any, user: any) => {
+      if (err)
+        return res
+          .status(403)
+          .json({ message: "リフレッシュトークンが無効です" });
+
+      const newAccessToken = jwt.sign(
+        { id: user.id, role: user.role },
+        process.env.JWT_SECRET as string,
+        { expiresIn: "10m" }
+      );
+
+      res.status(200).json({ accessToken: newAccessToken });
+    }
+  );
 };
 
 export const deleteRestaurant = async (

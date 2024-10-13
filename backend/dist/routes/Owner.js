@@ -23,6 +23,8 @@ router.post("/login", [
         .withMessage("有効なメールアドレスを入力してください"),
     (0, express_validator_1.check)("password").notEmpty().withMessage("パスワードが間違っています"),
 ], owner_controller_1.ownerLogin);
+router.post("/ownerLogout", authenticateToken_1.authenticateToken, owner_controller_1.ownerLogout);
+router.post("/ownerToken", owner_controller_1.refreshAccessToken);
 router.put("/updateOwner", authenticateToken_1.authenticateToken, authenticateToken_1.authorizeAdminOrManger, owner_controller_1.updateOwner);
 router.delete("/deleteOwner", [
     (0, express_validator_1.check)("email")

@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   deleteOwner,
   ownerLogin,
+  ownerLogout,
+  refreshAccessToken,
   registerOwner,
   updateOwner,
 } from "../controllers/owner-controller";
@@ -40,6 +42,10 @@ router.post(
   ],
   ownerLogin
 );
+
+router.post("/ownerLogout", authenticateToken, ownerLogout);
+
+router.post("/ownerToken", refreshAccessToken);
 
 router.put(
   "/updateOwner",

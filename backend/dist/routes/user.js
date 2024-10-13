@@ -20,7 +20,8 @@ router.post("/login", [
         .withMessage("有効なメールアドレスを入力してください"),
     (0, express_validator_1.check)("password").notEmpty().withMessage("パスワードが間違っています。"),
 ], user_controllers_1.login);
-router.post("/joinRestaurant", [(0, express_validator_1.check)("joiningKey").notEmpty().withMessage("参加キーを入力してください")], authenticateToken_1.authenticateToken, user_controllers_1.joinRestaurant);
+router.post("/userLogout", authenticateToken_1.authenticateToken, user_controllers_1.userLogout);
+router.post("/userToken", user_controllers_1.refreshAccessToken);
 router.delete("/deleteRestaurant", authenticateToken_1.authenticateToken, user_controllers_1.deleteRestaurant);
 router.delete("/deleteUser", [
     (0, express_validator_1.check)("email")

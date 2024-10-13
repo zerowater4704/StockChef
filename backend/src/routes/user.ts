@@ -3,9 +3,10 @@ import { check } from "express-validator";
 import {
   signup,
   login,
-  joinRestaurant,
   deleteRestaurant,
   deleteUser,
+  userLogout,
+  refreshAccessToken,
 } from "../controllers/user-controllers";
 import { authenticateToken } from "../middlewares/authenticateToken/authenticateToken";
 
@@ -36,12 +37,9 @@ router.post(
   login
 );
 
-router.post(
-  "/joinRestaurant",
-  [check("joiningKey").notEmpty().withMessage("参加キーを入力してください")],
-  authenticateToken,
-  joinRestaurant
-);
+router.post("/userLogout", authenticateToken, userLogout);
+
+router.post("/userToken", refreshAccessToken);
 
 router.delete("/deleteRestaurant", authenticateToken, deleteRestaurant);
 

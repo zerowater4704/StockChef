@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { validationResult } from "express-validator";
+import redisClient from "../redis/redisClient";
 
 function generateJoiningKey(): string {
   return Math.random().toString(36).slice(2, 8);
@@ -90,11 +91,9 @@ export const ownerLogin = async (
     }
 
     if (owner.role !== "admin") {
-      res
-        .status(400)
-        .json({
-          message: "今のアカウントはオーナーのアカウントではありません",
-        });
+      res.status(400).json({
+        message: "今のアカウントはオーナーのアカウントではありません",
+      });
       return;
     }
 
@@ -104,17 +103,75 @@ export const ownerLogin = async (
       return;
     }
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { id: owner._id, role: owner.role },
       process.env.JWT_SECRET as string,
-      { expiresIn: "1h" }
+      { expiresIn: "10m" }
     );
 
-    res.status(200).json({ token, owner });
+    const refreshToken = jwt.sign(
+      { id: owner._id, role: owner.role },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "1d" }
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({ accessToken, owner });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "ownerLogin APIで失敗しました。" });
   }
+};
+
+export const ownerLogout = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    res.status(400).json({ message: "トークンがありません" });
+    return;
+  }
+
+  await redisClient.set(token, "blacklisted", { EX: 3600 });
+
+  res.status(200).json({ message: "ログアウトしました" });
+};
+
+export const refreshAccessToken = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    res.status(403).json({ message: "リフレッシュトークンがありません" });
+    return;
+  }
+
+  jwt.verify(
+    refreshToken,
+    process.env.JWT_SECRET as string,
+    (err: any, user: any) => {
+      if (err)
+        return res
+          .status(403)
+          .json({ message: "リフレッシュトークンが無効です" });
+
+      const newAccessToken = jwt.sign(
+        { id: user.id, role: user.role },
+        process.env.JWT_SECRET as string,
+        { expiresIn: "10m" }
+      );
+
+      res.status(200).json({ accessToken: newAccessToken });
+    }
+  );
 };
 
 export const updateOwner = async (
@@ -192,117 +249,3 @@ export const deleteOwner = async (
     res.status(500).json({ message: "deleteOwner APIで失敗しました。" });
   }
 };
-
-// export const updateRestaurant = async (
-//   req: Request,
-//   res: Response
-// ): Promise<void> => {
-//   try {
-//     const ownerId = req.user?.id;
-
-//     const { restaurantId, name, location } = req.body;
-
-//     const restaurant = await Restaurant.findById({
-//       _id: restaurantId,
-//       adminId: ownerId,
-//     });
-
-//     if (!restaurant) {
-//       res.status(404).json({ message: "レストランが見つかりません" });
-//       return;
-//     }
-
-//     if (name) restaurant.name = name;
-//     if (location) restaurant.location = location;
-
-//     await restaurant.save();
-
-//     res
-//       .status(200)
-//       .json({ message: "レストラン情報が更新されました", restaurant });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "updateRestaurant APIで失敗しました。" });
-//   }
-// };
-
-// export const getEmployeesByRestaurant = async (
-//   req: Request,
-//   res: Response
-// ): Promise<void> => {
-//   try {
-//     const { restaurantId } = req.body;
-
-//     if (!restaurantId) {
-//       res.status(400).json({ message: "レストランを見つけません  " });
-//       return;
-//     }
-
-//     const employees = await User.find({ restaurantId });
-
-//     res.status(200).json({ employees });
-//   } catch (error) {
-//     console.error(error);
-//     res
-//       .status(500)
-//       .json({ message: "getEmployeesByRestaurant APIで失敗しました。" });
-//   }
-// };
-
-// export const getRestaurantById = async (
-//   req: Request,
-//   res: Response
-// ): Promise<void> => {
-//   try {
-//     const { id } = req.params;
-
-//     const restaurant = await Restaurant.findById(id);
-
-//     if (!restaurant) {
-//       res.status(404).json({ message: "レストランが見つかりません" });
-//       return;
-//     }
-
-//     res.status(200).json({ restaurant });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "getRestaurantById APIで失敗しました。" });
-//   }
-// };
-
-// export const getRestaurant = async (
-//   req: Request,
-//   res: Response
-// ): Promise<void> => {
-//   try {
-//     const ownerId = req.user?.id;
-//     const restaurant = await Restaurant.find({ adminId: ownerId });
-
-//     res.status(200).json({ restaurant });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "getRestaurant APIで失敗しました。" });
-//   }
-// };
-
-// export const deleteRestaurant = async (
-//   req: Request,
-//   res: Response
-// ): Promise<void> => {
-//   try {
-//     const ownerId = req.user?.id;
-//     const { restaurantId } = req.body;
-
-//     if (!restaurantId) {
-//       res.status(400).json({ message: "レストランが見つかりません", ownerId });
-//       return;
-//     }
-
-//     const restaurant = await Restaurant.findByIdAndDelete(restaurantId);
-
-//     res.status(200).json({ message: "レストランが削除されました", restaurant });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "deleteRestaurant APIで失敗しました。" });
-//   }
-// };

@@ -94,15 +94,26 @@ const ownerLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.status(400).json({ message: "パスワードが間違っています" });
             return;
         }
-        const accessToken = jsonwebtoken_1.default.sign({ id: owner._id, role: owner.role }, process.env.JWT_SECRET, { expiresIn: "10m" });
-        const refreshToken = jsonwebtoken_1.default.sign({ id: owner._id, role: owner.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
-        res.cookie("refreshToken", refreshToken, {
+        // Restaurant nameを取得する (仮定)
+        let restaurantName = "";
+        if (owner.restaurantId && owner.restaurantId.length > 0) {
+            const restaurant = yield Restaurant_1.default.findById(owner.restaurantId[0]); // 1つのレストランのみ対象
+            if (restaurant) {
+                restaurantName = restaurant.name; // レストラン名を取得
+            }
+        }
+        const ownerAccessToken = jsonwebtoken_1.default.sign({ id: owner._id, role: owner.role }, process.env.JWT_SECRET, { expiresIn: "10m" });
+        const refreshTokenOwner = jsonwebtoken_1.default.sign({ id: owner._id, role: owner.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "1d" });
+        res.cookie("refreshTokenOwner", refreshTokenOwner, {
             httpOnly: true,
             sameSite: "none",
             secure: true,
             maxAge: 24 * 60 * 60 * 1000,
         });
-        res.status(200).json({ accessToken, owner });
+        res.status(200).json({
+            ownerAccessToken,
+            owner: Object.assign(Object.assign({}, owner.toObject()), { restaurantName }),
+        });
     }
     catch (error) {
         console.error(error);
@@ -118,16 +129,23 @@ const ownerLogout = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         return;
     }
     yield redisClient_1.default.set(token, "blacklisted", { EX: 3600 });
+    res.clearCookie("refreshTokenOwner", {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+    });
     res.status(200).json({ message: "ログアウトしました" });
 });
 exports.ownerLogout = ownerLogout;
 const refreshAccessToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies.refreshTokenOwner;
+    console.log("refreshAccessTokenOwner req.cookies: ", req.cookies);
+    console.log("refreshAccessTokenOwner refreshToken: ", refreshToken);
     if (!refreshToken) {
         res.status(403).json({ message: "リフレッシュトークンがありません" });
         return;
     }
-    jsonwebtoken_1.default.verify(refreshToken, process.env.JWT_SECRET, (err, user) => {
+    jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
         if (err)
             return res
                 .status(403)

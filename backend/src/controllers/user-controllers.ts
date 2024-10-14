@@ -1,5 +1,4 @@
 import User from "../model/User";
-import Restaurant from "../model/Restaurant";
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
@@ -73,27 +72,33 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const accessToken = jwt.sign(
+    const userAccessToken = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET as string,
       { expiresIn: "10m" }
     );
 
-    const refreshToken = jwt.sign(
+    const refreshTokenUser = jwt.sign(
       { id: user._id, role: user.role },
       process.env.REFRESH_TOKEN_SECRET as string,
       { expiresIn: "1d" }
     );
 
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie("refreshTokenUser", refreshTokenUser, {
       httpOnly: true,
       sameSite: "none",
       secure: true,
       maxAge: 24 * 60 * 60 * 1000,
     });
 
+    res.clearCookie("refreshTokenOwner", {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
+
     res.status(200).json({
-      accessToken,
+      userAccessToken,
       user: {
         id: user._id,
         name: user.name,
@@ -113,7 +118,6 @@ export const userLogout = async (
 ): Promise<void> => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-
   if (!token) {
     res.status(400).json({ message: "トークンがありません" });
     return;
@@ -121,12 +125,17 @@ export const userLogout = async (
 
   await redisClient.set(token, "blacklisted", { EX: 3600 });
 
+  res.clearCookie("refreshTokenUser", {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+  });
+
   res.status(200).json({ message: "ログアウトしました" });
 };
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken;
-
+  const refreshToken = req.cookies.refreshTokenUser;
   if (!refreshToken) {
     res.status(403).json({ message: "リフレッシュトークンがありません" });
     return;

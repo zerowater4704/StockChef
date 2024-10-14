@@ -103,26 +103,38 @@ export const ownerLogin = async (
       return;
     }
 
-    const accessToken = jwt.sign(
+    // Restaurant nameを取得する (仮定)
+    let restaurantName = "";
+    if (owner.restaurantId && owner.restaurantId.length > 0) {
+      const restaurant = await Restaurant.findById(owner.restaurantId[0]); // 1つのレストランのみ対象
+      if (restaurant) {
+        restaurantName = restaurant.name; // レストラン名を取得
+      }
+    }
+
+    const ownerAccessToken = jwt.sign(
       { id: owner._id, role: owner.role },
       process.env.JWT_SECRET as string,
       { expiresIn: "10m" }
     );
 
-    const refreshToken = jwt.sign(
+    const refreshTokenOwner = jwt.sign(
       { id: owner._id, role: owner.role },
-      process.env.JWT_SECRET as string,
+      process.env.REFRESH_TOKEN_SECRET as string,
       { expiresIn: "1d" }
     );
 
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie("refreshTokenOwner", refreshTokenOwner, {
       httpOnly: true,
       sameSite: "none",
       secure: true,
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    res.status(200).json({ accessToken, owner });
+    res.status(200).json({
+      ownerAccessToken,
+      owner: { ...owner.toObject(), restaurantName },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "ownerLogin APIで失敗しました。" });
@@ -143,11 +155,17 @@ export const ownerLogout = async (
 
   await redisClient.set(token, "blacklisted", { EX: 3600 });
 
+  res.clearCookie("refreshTokenOwner", {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+  });
+
   res.status(200).json({ message: "ログアウトしました" });
 };
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken;
+  const refreshToken = req.cookies.refreshTokenOwner;
 
   if (!refreshToken) {
     res.status(403).json({ message: "リフレッシュトークンがありません" });
@@ -156,7 +174,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
 
   jwt.verify(
     refreshToken,
-    process.env.JWT_SECRET as string,
+    process.env.REFRESH_TOKEN_SECRET as string,
     (err: any, user: any) => {
       if (err)
         return res

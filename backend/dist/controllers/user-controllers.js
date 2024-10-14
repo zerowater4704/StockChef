@@ -73,16 +73,21 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(400).json({ message: "パスワードが間違っています" });
             return;
         }
-        const accessToken = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "10m" });
-        const refreshToken = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "1d" });
-        res.cookie("refreshToken", refreshToken, {
+        const userAccessToken = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "10m" });
+        const refreshTokenUser = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "1d" });
+        res.cookie("refreshTokenUser", refreshTokenUser, {
             httpOnly: true,
             sameSite: "none",
             secure: true,
             maxAge: 24 * 60 * 60 * 1000,
         });
+        res.clearCookie("refreshTokenOwner", {
+            httpOnly: true,
+            sameSite: "none",
+            secure: true,
+        });
         res.status(200).json({
-            accessToken,
+            userAccessToken,
             user: {
                 id: user._id,
                 name: user.name,
@@ -100,16 +105,25 @@ exports.login = login;
 const userLogout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
+    console.log("userLogout authHeader: ", authHeader);
+    console.log("userLogout token: ", token);
     if (!token) {
         res.status(400).json({ message: "トークンがありません" });
         return;
     }
     yield redisClient_1.default.set(token, "blacklisted", { EX: 3600 });
+    res.clearCookie("refreshTokenUser", {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+    });
     res.status(200).json({ message: "ログアウトしました" });
 });
 exports.userLogout = userLogout;
 const refreshAccessToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies.refreshTokenUser;
+    console.log("refreshAccessTokenUser req.cookies: ", req.cookies);
+    console.log("refreshAccessTokenUSer refreshToken: ", refreshToken);
     if (!refreshToken) {
         res.status(403).json({ message: "リフレッシュトークンがありません" });
         return;

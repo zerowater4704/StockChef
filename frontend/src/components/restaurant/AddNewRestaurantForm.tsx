@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { addNewRestaurant } from "../../services/restaurantService";
+import { addNewRestaurant } from "../../services/ownerRestaurantService";
 
 interface AddNewRestaurantAuthenticated {
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
@@ -22,7 +22,7 @@ const AddNewRestaurantForm: React.FC<AddNewRestaurantAuthenticated> = ({
       const response = await addNewRestaurant({ name, location });
       if (!response.type) {
         setIsAuthenticated(true);
-        navigate("/");
+        navigate("/owner-restaurant");
       } else {
         if (response.type === "custom") {
           setErrors([response.message]);

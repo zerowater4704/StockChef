@@ -1,0 +1,14 @@
+/* Calendar.css */
+.fc-day-sun {
+  background-color: #ffecec; /* 背景色を赤っぽく */
+  color: red;
+}
+
+.fc-day-sat {
+  background-color: #faf0f0; /* 背景色を赤っぽく */
+}
+
+.fc-daygrid-day-sat .fc-daygrid-day-number,
+.fc-daygrid-day-sun .fc-daygrid-day-number {
+  color: red; /* 日付の文字色を赤に */
+}

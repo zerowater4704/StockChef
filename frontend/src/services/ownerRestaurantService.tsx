@@ -1,11 +1,11 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/api/restaurant";
+const API_URL = "http://localhost:3000/api/owner/restaurant";
 
 // オーナーが従業員をレストランに参加させる
 export const addEmployeeToRestaurant = async (employeeEmail: string) => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("ownerToken");
     if (!token) {
       return { type: "custom", message: "ログインしてください" };
     }
@@ -30,7 +30,7 @@ export const addNewRestaurant = async (data: {
   location: string;
 }) => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("ownerToken");
     if (!token) {
       return { type: "custom", message: "ログインしてください" };
     }
@@ -50,7 +50,7 @@ export const addNewRestaurant = async (data: {
 // レストランに所属している従業員取得
 export const getEmployeesByRestaurant = async () => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("ownerToken");
     if (!token) {
       return { type: "custom", message: "ログインしてください" };
     }
@@ -69,7 +69,7 @@ export const getEmployeesByRestaurant = async () => {
 // 特定のレストランの情報を取得
 export const getRestaurantById = async (id: string) => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("ownerToken");
     if (!token) {
       return { type: "custom", message: "ログインしてください" };
     }
@@ -78,7 +78,6 @@ export const getRestaurantById = async (id: string) => {
         Authorization: `Bearer ${token}`,
       },
     });
-
     return response.data.restaurant;
   } catch (error: any) {
     return { type: "server", message: "予期せぬエラーが発生しました" };
@@ -88,19 +87,22 @@ export const getRestaurantById = async (id: string) => {
 // オーナーのすべてのレストラン取得
 export const getAllRestaurant = async () => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("ownerToken");
     if (!token) {
       return { type: "custom", message: "ログインしてください" };
     }
 
-    const response = await axios.get(`${API_URL}/allRestaurant`, {
+    const response = await axios.get(`${API_URL}/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
-    return response.data.restaurant;
+    if (Array.isArray(response.data.restaurants)) {
+      return response.data.restaurants;
+    }
   } catch (error: any) {
+    console.log("エラーです：", error);
     return { type: "server", message: "予期せぬエラーが発生しました" };
   }
 };
@@ -108,7 +110,7 @@ export const getAllRestaurant = async () => {
 // 特定のレストランの削除
 export const deleteRestaurant = async (restaurantId: string) => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("ownerToken");
     if (!token) {
       return { type: "custom", message: "ログインしてください" };
     }

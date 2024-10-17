@@ -5,10 +5,12 @@ import { useNavigate } from "react-router-dom";
 
 interface LoginOwnerAuthenticated {
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
+  setRole: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const LoginOwner: React.FC<LoginOwnerAuthenticated> = ({
   setIsAuthenticated,
+  setRole,
 }) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -21,9 +23,13 @@ const LoginOwner: React.FC<LoginOwnerAuthenticated> = ({
 
     try {
       const response = await loginOwner({ email, password });
+      console.log("LoginOwner: ", response);
       if (!response.type) {
+        localStorage.setItem("role", response.owner.role);
+        setRole(response.owner.role);
         setIsAuthenticated(true);
-        navigate("/");
+
+        navigate("/owner-restaurant");
       } else {
         if (response.type === "validation") {
           setErrors(response.message);

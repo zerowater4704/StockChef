@@ -5,10 +5,12 @@ import { useNavigate } from "react-router-dom";
 
 interface LoginUserAuthenticated {
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
+  setRole: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const LoginUser: React.FC<LoginUserAuthenticated> = ({
   setIsAuthenticated,
+  setRole,
 }) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -23,7 +25,8 @@ const LoginUser: React.FC<LoginUserAuthenticated> = ({
       const response = await loginUser({ email, password });
       if (!response.type) {
         setIsAuthenticated(true);
-        navigate("/");
+        setRole(response.user.role);
+        navigate("/user-restaurant");
       } else {
         if (response.type === "validation") {
           setErrors(response.message);

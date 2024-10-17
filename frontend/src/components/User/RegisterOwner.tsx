@@ -11,7 +11,7 @@ interface RegisterOwnerProps {
   location: string;
 }
 
-const RegisterOwner: React.FC = ({}) => {
+const RegisterOwner: React.FC = () => {
   const [formData, setFormData] = useState<RegisterOwnerProps>({
     name: "",
     email: "",

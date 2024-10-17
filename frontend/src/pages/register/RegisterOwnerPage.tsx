@@ -26,7 +26,10 @@ const RegisterOwnerPage: React.FC<RegisterOwnerPageProps> = ({
   handleSubmit,
 }) => {
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={handleSubmit}
+      className="w-full max-w-lg mx-auto p-4 bg-white shadow-md rounded"
+    >
       <InputForm
         label="名前"
         type="text"
@@ -67,9 +70,23 @@ const RegisterOwnerPage: React.FC<RegisterOwnerPageProps> = ({
         onChange={handleChange}
         error={errors.location}
       />
-      {serverError && <p>{serverError}</p>}
-      <Link to="/register">戻る</Link>
-      <button type="submit">登録</button>
+      <div className="flex items-center justify-between">
+        <Link
+          to="/register"
+          className="hover:text-red-700 py-2 px-4 focus:shadow-outline focus:outline-none"
+        >
+          戻る
+        </Link>
+        {serverError && (
+          <p className="text-red-500 text-xs font-bold mt-2">{serverError}</p>
+        )}
+        <button
+          type="submit"
+          className="hover:text-lime-700 py-2 px-4 focus:shadow-outline focus:outline-none"
+        >
+          登録
+        </button>
+      </div>
     </form>
   );
 };

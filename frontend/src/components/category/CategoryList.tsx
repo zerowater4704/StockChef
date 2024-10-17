@@ -4,7 +4,6 @@ import {
   deleteCategory,
   getCategories,
 } from "../../services/categoryService";
-import { Link, useNavigate } from "react-router-dom";
 import CategoryModal from "./CategoryModal";
 import {
   addItemToCategory,
@@ -53,6 +52,7 @@ const CategoryList: React.FC<AddCategoryAuthenticated> = ({
     const response = await addCategory(categoryName);
     if (response) {
       fetchCategories();
+      setIsAuthenticated(true);
     } else {
       setShowModal(false);
     }
